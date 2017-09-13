@@ -8,6 +8,10 @@ Angular UI Tree
 * **ui-tree-no-watches**
 * **ui-tree-nodes-no-watches**
 
+**Install using the latest commit id, e.g.:**
+
+**`bower install https://github.com/jeremypeters/angular-ui-tree.git#c2781d8 --save`**
+
 
 [![Build Status](https://travis-ci.org/angular-ui-tree/angular-ui-tree.svg?branch=master)](https://travis-ci.org/angular-ui-tree/angular-ui-tree) [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/angular-ui-tree/angular-ui-tree?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
