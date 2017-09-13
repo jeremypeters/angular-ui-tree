@@ -198,8 +198,8 @@
 
   angular.module('ui.tree')
 
-    .controller('TreeNodesController', ['$scope', '$element',
-      function ($scope, $element) {
+    .controller('TreeNodesController', ['$scope', '$element', '$timeout',
+      function ($scope, $element, $timeout) {
         this.scope = $scope;
 
         $scope.$element = $element;
@@ -243,22 +243,11 @@
           return $scope.$modelValue.length > 0;
         };
 
-        $scope.safeApply = function (fn) {
-          var phase = this.$root.$$phase;
-          if (phase == '$apply' || phase == '$digest') {
-            if (fn && (typeof (fn) === 'function')) {
-              fn();
-            }
-          } else {
-            this.$apply(fn);
-          }
-        };
-
         //Called in apply method of UiTreeHelper.dragInfo.
         $scope.removeNode = function (node) {
           var index = $scope.$modelValue.indexOf(node.$modelValue);
           if (index > -1) {
-            $scope.safeApply(function () {
+            $timeout(function () {
               $scope.$modelValue.splice(index, 1)[0];
             });
             return $scope.$treeScope.$callbacks.removed(node);
@@ -268,7 +257,7 @@
 
         //Called in apply method of UiTreeHelper.dragInfo.
         $scope.insertNode = function (index, nodeData) {
-          $scope.safeApply(function () {
+          $timeout(function () {
             $scope.$modelValue.splice(index, 0, nodeData);
           });
         };
@@ -394,12 +383,12 @@
             if (element.prop('tagName').toLowerCase() === 'table') {
               scope.$emptyElm = angular.element($window.document.createElement('tr'));
               $trElm = element.find('tr');
-              
+
               //If we can find a tr, then we can use its td children as the empty element colspan.
               if ($trElm.length > 0) {
                 emptyElmColspan = angular.element($trElm).children().length;
               } else {
-                
+
                 //If not, by setting a huge colspan we make sure it takes full width.
                 //TODO(jcarter): Check for negative side effects.
                 emptyElmColspan = 1000000;
@@ -419,58 +408,60 @@
               scope.$dropzoneElm.addClass(config.dropzoneClass);
             }
 
-            scope.$watch('$nodesScope.$modelValue.length', function (val) {
-              if (!angular.isNumber(val)) {
-                return;
-              }
+            if (!attrs.$attr.uiTreeNoWatches) {
+              scope.$watch('$nodesScope.$modelValue.length', function (val) {
+                if (!angular.isNumber(val)) {
+                  return;
+                }
 
-              ctrl.resetEmptyElement();
-              ctrl.resetDropzoneElement();
-            }, true);
-
-            scope.$watch(attrs.dragEnabled, function (val) {
-              if ((typeof val) == 'boolean') {
-                scope.dragEnabled = val;
-              }
-            });
-
-            scope.$watch(attrs.emptyPlaceholderEnabled, function (val) {
-              if ((typeof val) == 'boolean') {
-                scope.emptyPlaceholderEnabled = val;
                 ctrl.resetEmptyElement();
-              }
-            });
-
-            scope.$watch(attrs.nodropEnabled, function (val) {
-              if ((typeof val) == 'boolean') {
-                scope.nodropEnabled = val;
-              }
-            });
-
-            scope.$watch(attrs.dropzoneEnabled, function (val) {
-              if ((typeof val) == 'boolean') {
-                scope.dropzoneEnabled = val;
                 ctrl.resetDropzoneElement();
-              }
-            });
+              }, true);
 
-            scope.$watch(attrs.cloneEnabled, function (val) {
-              if ((typeof val) == 'boolean') {
-                scope.cloneEnabled = val;
-              }
-            });
+              scope.$watch(attrs.dragEnabled, function (val) {
+                if ((typeof val) == 'boolean') {
+                  scope.dragEnabled = val;
+                }
+              });
 
-            scope.$watch(attrs.maxDepth, function (val) {
-              if ((typeof val) == 'number') {
-                scope.maxDepth = val;
-              }
-            });
+              scope.$watch(attrs.emptyPlaceholderEnabled, function (val) {
+                if ((typeof val) == 'boolean') {
+                  scope.emptyPlaceholderEnabled = val;
+                  ctrl.resetEmptyElement();
+                }
+              });
 
-            scope.$watch(attrs.dragDelay, function (val) {
-              if ((typeof val) == 'number') {
-                scope.dragDelay = val;
-              }
-            });
+              scope.$watch(attrs.nodropEnabled, function (val) {
+                if ((typeof val) == 'boolean') {
+                  scope.nodropEnabled = val;
+                }
+              });
+
+              scope.$watch(attrs.dropzoneEnabled, function (val) {
+                if ((typeof val) == 'boolean') {
+                  scope.dropzoneEnabled = val;
+                  ctrl.resetDropzoneElement();
+                }
+              });
+
+              scope.$watch(attrs.cloneEnabled, function (val) {
+                if ((typeof val) == 'boolean') {
+                  scope.cloneEnabled = val;
+                }
+              });
+
+              scope.$watch(attrs.maxDepth, function (val) {
+                if ((typeof val) == 'number') {
+                  scope.maxDepth = val;
+                }
+              });
+
+              scope.$watch(attrs.dragDelay, function (val) {
+                if ((typeof val) == 'number') {
+                  scope.dragDelay = val;
+                }
+              });
+            }
 
             /**
              * Callback checks if the destination node can accept the dragged node.
@@ -565,19 +556,19 @@
 
             };
 
-            scope.$watch(attrs.uiTree, function (newVal, oldVal) {
-              angular.forEach(newVal, function (value, key) {
-                if (callbacks[key]) {
-                  if (typeof value === 'function') {
-                    callbacks[key] = value;
+            if (!attrs.$attr.uiTreeNoWatches) {
+              scope.$watch(attrs.uiTree, function (newVal, oldVal) {
+                angular.forEach(newVal, function (value, key) {
+                  if (callbacks[key]) {
+                    if (typeof value === 'function') {
+                      callbacks[key] = value;
+                    }
                   }
-                }
-              });
+                });
 
-              scope.$callbacks = callbacks;
-            }, true);
-
-
+                scope.$callbacks = callbacks;
+              }, true);
+            }
           }
         };
       }
@@ -676,48 +667,51 @@
             scope.scrollContainer = UiTreeHelper.getNodeAttribute(scope, 'scrollContainer') || attrs.scrollContainer || null;
             scope.sourceOnly = scope.nodropEnabled || scope.$treeScope.nodropEnabled;
 
-            scope.$watch(attrs.collapsed, function (val) {
-              if ((typeof val) == 'boolean') {
-                scope.collapsed = val;
-              }
-            });
+            if (!attrs.$attr.uiTreeNodeNoWatches) {
 
-            //Watches to trigger behavior based on actions and settings.
-            scope.$watch('collapsed', function (val) {
-              UiTreeHelper.setNodeAttribute(scope, 'collapsed', val);
-              attrs.$set('collapsed', val);
-            });
+              scope.$watch(attrs.collapsed, function (val) {
+                if ((typeof val) == 'boolean') {
+                  scope.collapsed = val;
+                }
+              });
 
-            scope.$watch(attrs.expandOnHover, function(val) {
-              if ((typeof val) === 'boolean' || (typeof val) === 'number') {
-                scope.expandOnHover = val;
-              }
-            });
+              //Watches to trigger behavior based on actions and settings.
+              scope.$watch('collapsed', function (val) {
+                UiTreeHelper.setNodeAttribute(scope, 'collapsed', val);
+                attrs.$set('collapsed', val);
+              });
 
-            scope.$watch('expandOnHover', function (val) {
-              UiTreeHelper.setNodeAttribute(scope, 'expandOnHover', val);
-              attrs.$set('expandOnHover', val);
-            });
+              scope.$watch(attrs.expandOnHover, function (val) {
+                if ((typeof val) === 'boolean' || (typeof val) === 'number') {
+                  scope.expandOnHover = val;
+                }
+              });
 
-            attrs.$observe('scrollContainer', function(val) {
-              if ((typeof val) === 'string') {
-                scope.scrollContainer = val;
-              }
-            });
+              scope.$watch('expandOnHover', function (val) {
+                UiTreeHelper.setNodeAttribute(scope, 'expandOnHover', val);
+                attrs.$set('expandOnHover', val);
+              });
 
-            scope.$watch('scrollContainer', function(val) {
-              UiTreeHelper.setNodeAttribute(scope, 'scrollContainer', val);
-              attrs.$set('scrollContainer', val);
-              scrollContainerElm = document.querySelector(val);
-            });
+              attrs.$observe('scrollContainer', function (val) {
+                if ((typeof val) === 'string') {
+                  scope.scrollContainer = val;
+                }
+              });
 
-            scope.$on('angular-ui-tree:collapse-all', function () {
-              scope.collapsed = true;
-            });
+              scope.$watch('scrollContainer', function (val) {
+                UiTreeHelper.setNodeAttribute(scope, 'scrollContainer', val);
+                attrs.$set('scrollContainer', val);
+                scrollContainerElm = document.querySelector(val);
+              });
 
-            scope.$on('angular-ui-tree:expand-all', function () {
-              scope.collapsed = false;
-            });
+              scope.$on('angular-ui-tree:collapse-all', function () {
+                scope.collapsed = true;
+              });
+
+              scope.$on('angular-ui-tree:expand-all', function () {
+                scope.collapsed = false;
+              });
+            }
 
             /**
              * Called when the user has grabbed a node and started dragging it.
@@ -1439,22 +1433,23 @@
               };
             }
 
-            scope.$watch(function () {
-              return attrs.maxDepth;
-            }, function (val) {
-              if ((typeof val) == 'number') {
-                scope.maxDepth = val;
-              }
-            });
+            if (!attrs.$attr.uiTreeNodesNoWatches) {
+              scope.$watch(function () {
+                return attrs.maxDepth;
+              }, function (val) {
+                if ((typeof val) == 'number') {
+                  scope.maxDepth = val;
+                }
+              });
 
-            scope.$watch(function () {
-              return attrs.nodropEnabled;
-            }, function (newVal) {
-              if ((typeof newVal) != 'undefined') {
-                scope.nodropEnabled = true;
-              }
-            }, true);
-
+              scope.$watch(function () {
+                return attrs.nodropEnabled;
+              }, function (newVal) {
+                if ((typeof newVal) != 'undefined') {
+                  scope.nodropEnabled = true;
+                }
+              }, true);
+            }
           }
         };
       }

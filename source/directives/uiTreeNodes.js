@@ -36,22 +36,23 @@
               };
             }
 
-            scope.$watch(function () {
-              return attrs.maxDepth;
-            }, function (val) {
-              if ((typeof val) == 'number') {
-                scope.maxDepth = val;
-              }
-            });
+            if (!attrs.$attr.uiTreeNodesNoWatches) {
+              scope.$watch(function () {
+                return attrs.maxDepth;
+              }, function (val) {
+                if ((typeof val) == 'number') {
+                  scope.maxDepth = val;
+                }
+              });
 
-            scope.$watch(function () {
-              return attrs.nodropEnabled;
-            }, function (newVal) {
-              if ((typeof newVal) != 'undefined') {
-                scope.nodropEnabled = true;
-              }
-            }, true);
-
+              scope.$watch(function () {
+                return attrs.nodropEnabled;
+              }, function (newVal) {
+                if ((typeof newVal) != 'undefined') {
+                  scope.nodropEnabled = true;
+                }
+              }, true);
+            }
           }
         };
       }

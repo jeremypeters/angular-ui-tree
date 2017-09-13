@@ -62,48 +62,51 @@
             scope.scrollContainer = UiTreeHelper.getNodeAttribute(scope, 'scrollContainer') || attrs.scrollContainer || null;
             scope.sourceOnly = scope.nodropEnabled || scope.$treeScope.nodropEnabled;
 
-            scope.$watch(attrs.collapsed, function (val) {
-              if ((typeof val) == 'boolean') {
-                scope.collapsed = val;
-              }
-            });
+            if (!attrs.$attr.uiTreeNodeNoWatches) {
 
-            //Watches to trigger behavior based on actions and settings.
-            scope.$watch('collapsed', function (val) {
-              UiTreeHelper.setNodeAttribute(scope, 'collapsed', val);
-              attrs.$set('collapsed', val);
-            });
+              scope.$watch(attrs.collapsed, function (val) {
+                if ((typeof val) == 'boolean') {
+                  scope.collapsed = val;
+                }
+              });
 
-            scope.$watch(attrs.expandOnHover, function(val) {
-              if ((typeof val) === 'boolean' || (typeof val) === 'number') {
-                scope.expandOnHover = val;
-              }
-            });
+              //Watches to trigger behavior based on actions and settings.
+              scope.$watch('collapsed', function (val) {
+                UiTreeHelper.setNodeAttribute(scope, 'collapsed', val);
+                attrs.$set('collapsed', val);
+              });
 
-            scope.$watch('expandOnHover', function (val) {
-              UiTreeHelper.setNodeAttribute(scope, 'expandOnHover', val);
-              attrs.$set('expandOnHover', val);
-            });
+              scope.$watch(attrs.expandOnHover, function (val) {
+                if ((typeof val) === 'boolean' || (typeof val) === 'number') {
+                  scope.expandOnHover = val;
+                }
+              });
 
-            attrs.$observe('scrollContainer', function(val) {
-              if ((typeof val) === 'string') {
-                scope.scrollContainer = val;
-              }
-            });
+              scope.$watch('expandOnHover', function (val) {
+                UiTreeHelper.setNodeAttribute(scope, 'expandOnHover', val);
+                attrs.$set('expandOnHover', val);
+              });
 
-            scope.$watch('scrollContainer', function(val) {
-              UiTreeHelper.setNodeAttribute(scope, 'scrollContainer', val);
-              attrs.$set('scrollContainer', val);
-              scrollContainerElm = document.querySelector(val);
-            });
+              attrs.$observe('scrollContainer', function (val) {
+                if ((typeof val) === 'string') {
+                  scope.scrollContainer = val;
+                }
+              });
 
-            scope.$on('angular-ui-tree:collapse-all', function () {
-              scope.collapsed = true;
-            });
+              scope.$watch('scrollContainer', function (val) {
+                UiTreeHelper.setNodeAttribute(scope, 'scrollContainer', val);
+                attrs.$set('scrollContainer', val);
+                scrollContainerElm = document.querySelector(val);
+              });
 
-            scope.$on('angular-ui-tree:expand-all', function () {
-              scope.collapsed = false;
-            });
+              scope.$on('angular-ui-tree:collapse-all', function () {
+                scope.collapsed = true;
+              });
+
+              scope.$on('angular-ui-tree:expand-all', function () {
+                scope.collapsed = false;
+              });
+            }
 
             /**
              * Called when the user has grabbed a node and started dragging it.
